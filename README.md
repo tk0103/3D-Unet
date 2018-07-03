@@ -1,4 +1,4 @@
-# 3D-Unet
+# 3D-Uneta
 Chainer implementation of 3D Unet.  
 This program segments brain and unfinished implementaions.  
 Training configs are written at coonfigs/base.yml.
