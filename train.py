@@ -53,7 +53,7 @@ def main():
     print('')
 
     # Load the datasets
-    train = UnetDataset(args.root, args.training_list, args.training_coordinate_list, config.patch['patchside'])
+    train = UnetDataset(args.root, args.training_list,args.training_coordinate_list, config.patch['patchside'])
     train_iter = chainer.iterators.SerialIterator(train, batch_size=config.batchsize)
 
     # Set up a neural network to train
