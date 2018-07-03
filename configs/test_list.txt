@@ -1,3 +1,1 @@
-t1/0028347/session_1/anat_1/anat.nii.gz	seg/28347_session1_T1_BrainSegmentation.nii.gz
-t1/0028328/session_1/anat_1/anat.nii.gz	seg/28328_session1_T1_BrainSegmentation.nii.gz
-t1/0028327/session_1/anat_1/anat.nii.gz	seg/28327_session1_T1_BrainSegmentation.nii.gz
+\\tera\user\boku(結果にCommit_コスパ改善中)\NZ_data\Mouse\Standarized_mouse\without_bone\pIwM3E1.mhd \\tera\user\boku(結果にCommit_コスパ改善中)\NZ_data\Mouse\Standarized_mouse\without_bone\M3GT.mhd
