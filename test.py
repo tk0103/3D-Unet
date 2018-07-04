@@ -75,7 +75,8 @@ def main():
 
         ResultOut[z_s:z_e,y_s:y_e,x_s:x_e] = pred_label.astype(np.uint8)
 
-    io.save_raw(ResultOut, "C:\\Users\\yourb\\Documents\\GitHub\\3D-Unet\\Result.raw",np.uint8)
+    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResult..raw"),np.uint8)
+    print("test done")
 
 
 if __name__ == '__main__':
