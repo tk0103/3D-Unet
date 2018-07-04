@@ -17,7 +17,7 @@ import util.yaml_utils  as yaml_utils
 
 def main():
     parser = argparse.ArgumentParser(description='Train 3D-Unet')
-    parser.add_argument('--gpu', '-g', type=int, default=-1,
+    parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID (negative value indicates CPU)')
     parser.add_argument('--root', '-R', default=os.path.dirname(os.path.abspath(__file__)),
                         help='Root directory path of input image')
@@ -56,9 +56,12 @@ def main():
     train = UnetDataset(args.root, args.training_list,args.training_coordinate_list, config.patch['patchside'])
     train_iter = chainer.iterators.SerialIterator(train, batch_size=config.batchsize)
 
+    validation = UnetDataset(args.root, args.validation_list,args.validation_coordinate_list, config.patch['patchside'])
+    validation_iter = chainer.iterators.SerialIterator(validation, batch_size=config.batchsize,repeat = False,shuffle = False)
+
     # Set up a neural network to train
     print ('Set up a neural network to train')
-    unet = UNet3D(7)
+    unet = UNet3D(4)
     if args.model:
         chainer.serializers.load_npz(args.model, gen)
 
@@ -78,10 +81,10 @@ def main():
     #Set up a trainer
     updater = Unet3DUpdater(models=(unet),
                             iterator=train_iter,
-                            optimizer={'unet':opt_unet},
+                            optimizer={'main':opt_unet},
                             device=args.gpu)
 
-    def create_result_dir(result_dir, config_path, config):
+    def create_result_dir(base,result_dir, config_path, config):
         """https://github.com/pfnet-research/sngan_projection/blob/master/train.py"""
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
@@ -92,19 +95,21 @@ def main():
 
         copy_to_result_dir(config_path, result_dir)
         copy_to_result_dir(
-            config.unet['fn'], result_dir)
+            os.path.join(base,config.unet['fn']), result_dir)
+
         copy_to_result_dir(
-            config.updater['fn'], result_dir)
+            os.path.join(base,config.updater['fn']), result_dir)
 
     out = os.path.join(args.root, args.out)
     config_path = os.path.join(os.path.dirname(__file__), args.config_path)
-    create_result_dir(out, config_path, config)
+    create_result_dir(args.root,out, config_path, config)
 
     trainer = training.Trainer(updater, (config.iteration, 'iteration'), out=out)
 
     # Set up logging
     snapshot_interval = (config.snapshot_interval, 'iteration')
     display_interval = (config.display_interval, 'iteration')
+    trainer.extend(extensions.Evaluator(validation_iter, unet, device=args.gpu),trigger=snapshot_interval)
     trainer.extend(extensions.snapshot(filename='snapshot_iter_{.updater.iteration}.npz'),trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(unet, filename=unet.__class__.__name__ +'_{.updater.iteration}.npz'), trigger=snapshot_interval)
 
@@ -115,7 +120,7 @@ def main():
     trainer.extend(extensions.ProgressBar(update_interval=10))
 
     # Print selected entries of the log to stdout
-    report_keys = ['epoch', 'iteration', 'unet/loss']
+    report_keys = ['epoch', 'iteration', 'main/loss','validation/main/loss']
     trainer.extend(extensions.PrintReport(report_keys), trigger=display_interval)
 
     # Use linear shift

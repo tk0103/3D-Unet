@@ -21,19 +21,20 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         * @param ground_truth Ground truth label
         """
         batchsize = len(predict)
-        loss = F.sum(-F.log(predict) * ground_truth)/batchsize
+        eps = 1e-16
+        loss = -F.mean(F.log(predict+eps) * ground_truth)
 
         chainer.report({"loss":loss}, unet)#mistery
         return loss
-    
-    def jaccard_index(predict, ground_truth):    
+
+    def jaccard_index(predict, ground_truth):
         JI_numerator=0.0
         JI_denominator=0.0
 
         predict = predict.ravel()
         ground_truth = ground_truth.ravel()
         seg = (predict > 0.5)
-    
+
         JI_numerator = (seg * ground_truth).sum()
         JI_denominator =(seg + ground_truth> 0).sum()
 
@@ -41,7 +42,7 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
 
     def update_core(self):
         #load optimizer called "unet"
-        unet_optimizer = self.get_optimizer("unet")
+        unet_optimizer = self.get_optimizer("main")
         batch = self.get_iterator("main").next()#iterator
 
         # iterator
