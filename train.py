@@ -9,10 +9,12 @@ import chainer
 from chainer import training
 from chainer.training import extension
 from chainer.training import extensions
+import chainer.functions as F
 
 from model import UNet3D
 from updater import Unet3DUpdater
 from dataset import UnetDataset
+from evaluator import UNet3DEvaluator
 import util.yaml_utils  as yaml_utils
 
 def main():
@@ -81,7 +83,7 @@ def main():
     #Set up a trainer
     updater = Unet3DUpdater(models=(unet),
                             iterator=train_iter,
-                            optimizer={'main':opt_unet},
+                            optimizer={'unet':opt_unet},
                             device=args.gpu)
 
     def create_result_dir(base,result_dir, config_path, config):
@@ -109,7 +111,7 @@ def main():
     # Set up logging
     snapshot_interval = (config.snapshot_interval, 'iteration')
     display_interval = (config.display_interval, 'iteration')
-    trainer.extend(extensions.Evaluator(validation_iter, unet, device=args.gpu),trigger=snapshot_interval)
+    trainer.extend(UNet3DEvaluator(validation_iter, unet ,device=args.gpu),trigger=display_interval)
     trainer.extend(extensions.snapshot(filename='snapshot_iter_{.updater.iteration}.npz'),trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(unet, filename=unet.__class__.__name__ +'_{.updater.iteration}.npz'), trigger=snapshot_interval)
 
@@ -120,7 +122,7 @@ def main():
     trainer.extend(extensions.ProgressBar(update_interval=10))
 
     # Print selected entries of the log to stdout
-    report_keys = ['epoch', 'iteration', 'main/loss','validation/main/loss']
+    report_keys = ['epoch', 'iteration', 'unet/loss','unet/dice','vali/unet/loss','vali/unet/dice']
     trainer.extend(extensions.PrintReport(report_keys), trigger=display_interval)
 
     # Use linear shift
@@ -130,7 +132,7 @@ def main():
 
     # Save two plot images to the result dir
     if extensions.PlotReport.available():
-        trainer.extend(extensions.PlotReport(['unet/loss'], 'iteration', file_name='unet_loss.png',trigger=display_interval))
+        trainer.extend(extensions.PlotReport(['main/loss'], 'iteration', file_name='unet_loss.png',trigger=display_interval))
 
     if args.resume:
         # Resume from a snapshot

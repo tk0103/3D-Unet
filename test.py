@@ -10,7 +10,6 @@ from dataset import UnetDataset
 import pandas as pd
 import util.yaml_utils  as yaml_utils
 import util.iomod as io
-from chainer import Variable
 from chainer.cuda import to_cpu
 from chainer.cuda import to_gpu
 
@@ -25,7 +24,7 @@ def main():
     parser.add_argument('--out', '-o', default= 'results',
                         help='Directory to output the result')
 
-    parser.add_argument('--model', '-m', default='UNet3D_2500.npz',
+    parser.add_argument('--model', '-m', default='UNet3D_50.npz',
                         help='Load model data')
     parser.add_argument('--resume', '-res', default='',
                         help='Resume the training from snapshot')
@@ -58,7 +57,6 @@ def main():
     patch_side = 44
     ResultOut = np.zeros((860,544,544),dtype = np.uint8)
 
-    print(len(test))
     for index in range(len(test)):
         t,x = test[index]
         x = x[:,np.newaxis,:]
@@ -68,14 +66,15 @@ def main():
             y = unet(x)
         y = F.softmax(y).data
         pred_label = np.squeeze(to_cpu(y.argmax(axis=1)))
+
         x,y,z=coordi[index]
         x_s, x_e = (x - int(patch_side/2)), (x + int(patch_side/2))
         y_s, y_e = (y - int(patch_side/2)), (y + int(patch_side/2))
         z_s, z_e = (z - int(patch_side/2)), (z + int(patch_side/2))
 
-        ResultOut[z_s:z_e,y_s:y_e,x_s:x_e] = pred_label.astype(np.uint8)
+        ResultOut[z_s:z_e,y_s:y_e,x_s:x_e] = pred_label
 
-    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResult..raw"),np.uint8)
+    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResult.raw"),np.uint8)
     print("test done")
 
 

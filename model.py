@@ -65,7 +65,7 @@ class UNet3D(chainer.Chain):
         h15 = F.relu(self.bnd2(self.conv9(h14)))
         h16 = F.relu(self.bnd1(self.conv10(h15)))
         lcl = F.softmax(self.lcl(h16), axis=1)
-        
+
         return lcl
 
 
