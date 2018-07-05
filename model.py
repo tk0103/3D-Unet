@@ -8,42 +8,37 @@ class UNet3D(chainer.Chain):
     def __init__(self, label):
         super(UNet3D, self).__init__()
         with self.init_scope():
+            #encorder pass
             self.conv1 = L.ConvolutionND(ndim=3,in_channels=1,out_channels=8, ksize=3,pad=1)
+            self.bnc0 = L.BatchNormalization(8)
             self.conv2 = L.ConvolutionND(ndim=3,in_channels=8,out_channels=16, ksize=3,pad=1)
+            self.bnc1 = L.BatchNormalization(16)
 
             self.conv3 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=16, ksize=3,pad=1)
+            self.bnc2 = L.BatchNormalization(16)
             self.conv4 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=32, ksize=3,pad=1)
+            self.bnc3 = L.BatchNormalization(32)
 
             self.conv5 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=3,pad=1)
+            self.bnc4 = L.BatchNormalization(32)
             self.conv6 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=64, ksize=3,pad=1)
+            self.bnc5 = L.BatchNormalization(64)
 
+            #decorder pass
             self.dconv1 = L.DeconvolutionND(ndim=3,in_channels=64,out_channels=64, ksize=2, stride=2)
             self.conv7 = L.ConvolutionND(ndim=3,in_channels=32 + 64,out_channels=32, ksize=3,pad=1)
+            self.bnd4 = L.BatchNormalization(32)
             self.conv8 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=3,pad=1)
+            self.bnd3 = L.BatchNormalization(32)
 
             self.dconv2 = L.DeconvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=2, stride=2)
             self.conv9 = L.ConvolutionND(ndim=3,in_channels=16 + 32,out_channels=16, ksize=3,pad=1)
+            self.bnd2 = L.BatchNormalization(16)
             self.conv10 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=16, ksize=3,pad=1)
-            #self.conv11 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=label, ksize=1)
+            self.bnd1 = L.BatchNormalization(16)
             self.lcl = L.ConvolutionND(ndim=3, in_channels=16, out_channels=label, ksize=1, pad=0)
 
-            self.bnc0 = L.BatchNormalization(8)
-            self.bnc1 = L.BatchNormalization(16)
-            self.bnc2 = L.BatchNormalization(16)
-            self.bnc3 = L.BatchNormalization(32)
-            self.bnc4 = L.BatchNormalization(32)
-            self.bnc5 = L.BatchNormalization(64)
-
-            self.bnd4 = L.BatchNormalization(32)
-            self.bnd3 = L.BatchNormalization(32)
-            self.bnd2 = L.BatchNormalization(16)
-            self.bnd1 = L.BatchNormalization(16)
-            self.train = True
-
-
-
     def __call__(self, x):
-        test = not self.train
         h1 = F.relu(self.bnc0(self.conv1(x)))
         h2 = F.relu(self.bnc1(self.conv2(h1)))
         h3 = F.max_pooling_nd(h2, ksize=2, stride=2)

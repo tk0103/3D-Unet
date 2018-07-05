@@ -21,41 +21,26 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         * @param ground_truth Ground truth label
         """
         #batchsize,ch,z,y,x
-        batchsize = len(predict)
         eps = 1e-16
-        loss = -F.mean(F.log(predict+eps) * ground_truth)
-        dice = self.jaccard_index(predict,ground_truth)
+        cross_entropy = -F.mean(F.log(predict+eps) * ground_truth)
 
-        chainer.report({"loss":loss}, unet)#mistery
-        chainer.report({"dice":dice}, unet)
+        chainer.report({"loss":cross_entropy}, unet)#mistery
         return loss
 
-    def jaccard_index(self,predict, ground_truth):
-        JI_numerator=0.0
-        JI_denominator=0.0
+    def dice_coefficent(self,unet,predict, ground_truth):
+        dice_numerator = 0.0
+        dice_denominator = 0.0
+        eps = 1e-16
 
-        predict = F.flatten(predict[:,1:4,:,:,:]).data
-        ground_truth = F.flatten(ground_truth[:,1:4,:,:,:]).data
-        seg = (predict > 0.5)
-        #print(aa.shape)
+        predict = F.flatten(predict[:,1:4,:,:,:])
+        ground_truth = F.flatten(ground_truth[:,1:4,:,:,:].astype(np.float32))
 
-        JI_numerator = (seg * ground_truth).sum()
-        JI_denominator =((seg + ground_truth)> 0).sum()
+        dice_numerator = F.sum(predict * ground_truth)
+        dice_denominator =F.sum(predict+ ground_truth)
+        loss = 2*dice_numerator/(dice_denominator+eps)
 
-        return JI_numerator/JI_denominator
-
-    def dice_coefficent(self,predict, ground_truth):
-        dice_numerator=0.0
-        dice_denominator=0.0
-
-        predict = F.flatten(predict).data
-        ground_truth = F.flatten(ground_truth).data
-        seg = (predict > 0.5)
-
-        dice_numerator = 2*(seg * ground_truth).sum()
-        dice_denominator =seg.sum()+ ground_truth.sum()
-
-        return dice_numerator/dice_denominator
+        chainer.report({"dice":loss}, unet)
+        return -loss #maximize dice
 
     def update_core(self):
         #load optimizer called "unet"
@@ -68,4 +53,4 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
 
         predict = unet(data)
 
-        unet_optimizer.update(self.loss_softmax_cross_entropy, unet, predict, label)
+        unet_optimizer.update(self.dice_coefficent, unet, predict, label)

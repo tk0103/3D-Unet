@@ -21,15 +21,15 @@ def main():
                         help='Root directory path of input image')
     parser.add_argument('--config_path', type=str, default='configs/base.yml',
                         help='path to config file')
-    parser.add_argument('--out', '-o', default= 'results',
+    parser.add_argument('--out', '-o', default= 'Results_trM1_ValiM2',
                         help='Directory to output the result')
 
-    parser.add_argument('--model', '-m', default='UNet3D_50.npz',
+    parser.add_argument('--model', '-m', default='UNet3D_15000.npz',
                         help='Load model data')
     parser.add_argument('--resume', '-res', default='',
                         help='Resume the training from snapshot')
 
-    parser.add_argument('--test_list', default='configs/test_list.txt',
+    parser.add_argument('--test_list', default='configs/M3.txt',
                         help='Path to training image list file')
 
     parser.add_argument('--test_coordinate_list', type=str,

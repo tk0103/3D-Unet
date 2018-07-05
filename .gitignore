@@ -4,3 +4,10 @@ data/
 results/
 *.csv
 results
+configs
+Results_trM1_ValiM2
+Results_trM1_ValiM3
+Results_trM2_ValiM1
+Results_trM2_ValiM3
+Results_trM3_ValiM1
+Results_trM3_ValiM2

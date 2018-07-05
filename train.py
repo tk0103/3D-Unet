@@ -25,7 +25,7 @@ def main():
                         help='Root directory path of input image')
     parser.add_argument('--config_path', type=str, default='configs/base.yml',
                         help='path to config file')
-    parser.add_argument('--out', '-o', default= 'results',
+    parser.add_argument('--out', '-o', default= 'Results_trM1_ValiM2',
                         help='Directory to output the result')
 
     parser.add_argument('--model', '-m', default='',
@@ -33,15 +33,15 @@ def main():
     parser.add_argument('--resume', '-res', default='',
                         help='Resume the training from snapshot')
 
-    parser.add_argument('--training_list', default='configs/training_list.txt',
+    parser.add_argument('--training_list', default='configs/M1.txt',
                         help='Path to training image list file')
-    parser.add_argument('--validation_list', default='configs/validation_list.txt',
-                        help='Path to validation image list file')
-
     parser.add_argument('--training_coordinate_list', type=str,
-                        default='configs/training_coordinate_list.csv')
+                        default='configs/M1.csv')
+
+    parser.add_argument('--validation_list', default='configs/M2.txt',
+                        help='Path to validation image list file')
     parser.add_argument('--validation_coordinate_list', type=str,
-                        default='configs/validation_coordinate_list.csv')
+                        default='configs/M2.csv')
 
     args = parser.parse_args()
 
@@ -111,7 +111,8 @@ def main():
     # Set up logging
     snapshot_interval = (config.snapshot_interval, 'iteration')
     display_interval = (config.display_interval, 'iteration')
-    trainer.extend(UNet3DEvaluator(validation_iter, unet ,device=args.gpu),trigger=display_interval)
+    evaluation_interval = (config.evaluation_interval,'iteration')
+    trainer.extend(UNet3DEvaluator(validation_iter, unet ,device=args.gpu),trigger=evaluation_interval)
     trainer.extend(extensions.snapshot(filename='snapshot_iter_{.updater.iteration}.npz'),trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(unet, filename=unet.__class__.__name__ +'_{.updater.iteration}.npz'), trigger=snapshot_interval)
 
@@ -122,7 +123,9 @@ def main():
     trainer.extend(extensions.ProgressBar(update_interval=10))
 
     # Print selected entries of the log to stdout
-    report_keys = ['epoch', 'iteration', 'unet/loss','unet/dice','vali/unet/loss','vali/unet/dice']
+    #report_keys = ['epoch', 'iteration', 'unet/loss','unet/dice','vali/unet/loss','vali/unet/dice']
+    report_keys = ['iteration','unet/dice','vali/unet/dice']
+
     trainer.extend(extensions.PrintReport(report_keys), trigger=display_interval)
 
     # Use linear shift
@@ -132,7 +135,8 @@ def main():
 
     # Save two plot images to the result dir
     if extensions.PlotReport.available():
-        trainer.extend(extensions.PlotReport(['main/loss'], 'iteration', file_name='unet_loss.png',trigger=display_interval))
+        #trainer.extend(extensions.PlotReport(['unet/loss','vali/unet/loss'], 'iteration', file_name='unet_loss.png',trigger=display_interval))
+        trainer.extend(extensions.PlotReport(['unet/dice','vali/unet/dice'], 'iteration', file_name='unet_dice.png',trigger=display_interval))
 
     if args.resume:
         # Resume from a snapshot
