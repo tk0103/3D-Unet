@@ -40,7 +40,7 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         loss = 2*dice_numerator/(dice_denominator+eps)
 
         chainer.report({"dice":loss}, unet)
-        return -loss #maximize dice
+        return 1-loss #maximize dice
 
     def update_core(self):
         #load optimizer called "unet"
