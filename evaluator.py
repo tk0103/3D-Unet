@@ -34,14 +34,17 @@ class UNet3DEvaluator(extensions.Evaluator):
         dice_denominator = 0.0
         eps = 1e-16
 
-        predict = F.flatten(predict[:,1:4,:,:,:])
-        ground_truth = F.flatten(ground_truth[:,1:4,:,:,:].astype(np.float32))
+        predict = F.flatten(predict)
+        ground_truth = F.flatten(ground_truth[:,:,20:24,20:24,20:24].astype(np.float32))
+        #predict = F.flatten(predict[:,1:4,:,:,:])
+        #ground_truth = F.flatten(ground_truth[:,1:4,20:56,20:56,20:56].astype(np.float32))
+        #ground_truth = F.flatten(ground_truth[:,1:4,20:23+1,20:23+1,20:23+1].astype(np.float32))
 
         dice_numerator = F.sum(predict * ground_truth)
-        dice_denominator =F.sum(predict+ ground_truth)
+        dice_denominator = F.sum(predict+ ground_truth)
         dice = 2*dice_numerator/(dice_denominator+eps)
 
-        return dice
+        return 1 - dice
 
     def evaluate(self):
         iterator = self._iterators['main']

@@ -7,11 +7,12 @@ import os, sys, time
 import argparse, yaml, shutil
 import chainer
 from chainer import training
+from chainer import serializers
 from chainer.training import extension
 from chainer.training import extensions
 import chainer.functions as F
 
-from model import UNet3D
+from model_nopad import UNet3D
 from updater import Unet3DUpdater
 from dataset import UnetDataset
 from evaluator import UNet3DEvaluator
@@ -63,7 +64,7 @@ def main():
 
     # Set up a neural network to train
     print ('Set up a neural network to train')
-    unet = UNet3D(4)
+    unet = UNet3D(2)
     if args.model:
         chainer.serializers.load_npz(args.model, gen)
 
@@ -107,6 +108,7 @@ def main():
     create_result_dir(args.root,out, config_path, config)
 
     trainer = training.Trainer(updater, (config.iteration, 'iteration'), out=out)
+    #serializers.load_npz('C:\\Users\\yourb\\Documents\\GitHub\\3D-Unet\\Results_trM1_ValiM2\\snapshot_iter_10500.npz', trainer)
 
     # Set up logging
     snapshot_interval = (config.snapshot_interval, 'iteration')

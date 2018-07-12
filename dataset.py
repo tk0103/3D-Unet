@@ -14,7 +14,7 @@ class UnetDataset(chainer.dataset.DatasetMixin):
         print(' Initilaze dataset ')
         self._root = root
         self._patch_side = patch_side
-        self._max_label = 4 #[0, 7)
+        self._max_label = 2 #[0, 7)
 
         assert(self._patch_side%2==0)
 
@@ -39,10 +39,8 @@ class UnetDataset(chainer.dataset.DatasetMixin):
             print('   label from: {}'.format(i[1]))
             # Read data
             org = IO.read_mhd_and_raw(os.path.join(self._root, 'data', i[0])).astype("float32")
-            #var = np.var(org)
-            #mean = np.mean(org)
-            #org = (org - mean)/var
             org = org[np.newaxis, :]#(ch, z, y, x)
+
             label_ = IO.read_mhd_and_raw(os.path.join(self._root, 'data', i[1])).flatten()
             label = np.zeros((org.shape[1]*org.shape[2]*org.shape[3], self._max_label), dtype=int)
             # one-hot encoding
