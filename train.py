@@ -64,7 +64,7 @@ def main():
 
     # Set up a neural network to train
     print ('Set up a neural network to train')
-    unet = UNet3D(2)
+    unet = UNet3D(3)
     if args.model:
         chainer.serializers.load_npz(args.model, gen)
 
@@ -73,7 +73,7 @@ def main():
         unet.to_gpu()
 
     #Set up an optimizer
-    def make_optimizer(model, alpha=0.00001, beta1=0.9, beta2=0.999):
+    def make_optimizer(model, alpha=0.0001, beta1=0.9, beta2=0.999):
         optimizer = chainer.optimizers.Adam(alpha=alpha, beta1=beta1, beta2=beta2)
         optimizer.setup(model)
         return optimizer

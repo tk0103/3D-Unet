@@ -14,7 +14,7 @@ class UnetDataset(chainer.dataset.DatasetMixin):
         print(' Initilaze dataset ')
         self._root = root
         self._patch_side = patch_side
-        self._max_label = 2 #[0, 7)
+        self._max_label = 3 #[0, 7)
 
         assert(self._patch_side%2==0)
 

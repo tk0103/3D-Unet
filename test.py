@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--out', '-o', default= 'Results_trM1_ValiM2',
                         help='Directory to output the result')
 
-    parser.add_argument('--model', '-m', default='UNet3D_3600.npz',
+    parser.add_argument('--model', '-m', default='UNet3D_3000.npz',
                         help='Load model data')
     parser.add_argument('--resume', '-res', default='',
                         help='Resume the training from snapshot')
@@ -43,7 +43,7 @@ def main():
     print('')
 
     test = UnetDataset(args.root, args.test_list,args.test_coordinate_list, config.patch['patchside'])
-    unet = UNet3D(2)
+    unet = UNet3D(3)
 
     if(args.gpu>= 0):
         use_cudnn = True
