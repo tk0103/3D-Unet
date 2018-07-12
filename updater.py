@@ -20,25 +20,32 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         * @param predict Output of unet
         * @param ground_truth Ground truth label
         """
-        batchsize = len(predict)
-        loss = F.sum(-F.log(predict) * ground_truth)/batchsize
+        #batchsize,ch,z,y,x
+        eps = 1e-16
+        cross_entropy = -F.mean(F.log(predict+eps) * ground_truth)
 
-        chainer.report({"loss":loss}, unet)#mistery
+        chainer.report({"loss":cross_entropy}, unet)#mistery
         return loss
-    
-    def jaccard_index(predict, ground_truth):    
-        JI_numerator=0.0
-        JI_denominator=0.0
 
-        predict = predict.ravel()
-        ground_truth = ground_truth.ravel()
-        seg = (predict > 0.5)
-    
-        JI_numerator = (seg * ground_truth).sum()
-        JI_denominator =(seg + ground_truth> 0).sum()
+    def dice_coefficent(self,unet,predict, ground_truth):
+        dice_numerator = 0.0
+        dice_denominator = 0.0
+        eps = 1e-16
 
-        return JI_numerator/JI_denominator
+        predict = F.flatten(predict)
+        ground_truth = F.flatten(ground_truth.astype(np.float32))
+        #predict = F.flatten(predict[:,1:4,:,:,:])
+        #ground_truth = F.flatten(ground_truth[:,1:4,:,:,:].astype(np.float32))
 
+        dice_numerator = F.sum(predict * ground_truth)
+        dice_denominator = F.sum(predict + ground_truth)
+        dice = 2*dice_numerator/(dice_denominator+eps)
+        loss = 1 - dice
+
+        chainer.report({"dice":loss}, unet)
+
+        return 1 - dice_coefficent
+        
     def update_core(self):
         #load optimizer called "unet"
         unet_optimizer = self.get_optimizer("unet")
@@ -46,9 +53,10 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
 
         # iterator
         label, data = self.converter(batch, self.device)
-
         unet = self.unet
 
         predict = unet(data)
 
-        unet_optimizer.update(self.loss_softmax_cross_entropy, unet, predict, label)
+        label = label[:,:,20:24,20:24,20:24]
+        #print(label.shape)
+        unet_optimizer.update(self.dice_coefficent, unet, predict, label)

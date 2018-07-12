@@ -9,32 +9,32 @@ class UNet3D(chainer.Chain):
         super(UNet3D, self).__init__()
         with self.init_scope():
             #encorder pass
-            self.conv1 = L.ConvolutionND(ndim=3,in_channels=1,out_channels=8, ksize=3,pad=1)
+            self.conv1 = L.ConvolutionND(ndim=3,in_channels=1,out_channels=8, ksize=3,pad=0)
             self.bnc0 = L.BatchNormalization(8)
-            self.conv2 = L.ConvolutionND(ndim=3,in_channels=8,out_channels=16, ksize=3,pad=1)
+            self.conv2 = L.ConvolutionND(ndim=3,in_channels=8,out_channels=16, ksize=3,pad=0)
             self.bnc1 = L.BatchNormalization(16)
 
-            self.conv3 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=16, ksize=3,pad=1)
+            self.conv3 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=16, ksize=3,pad=0)
             self.bnc2 = L.BatchNormalization(16)
-            self.conv4 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=32, ksize=3,pad=1)
+            self.conv4 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=32, ksize=3,pad=0)
             self.bnc3 = L.BatchNormalization(32)
 
-            self.conv5 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=3,pad=1)
+            self.conv5 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=3,pad=0)
             self.bnc4 = L.BatchNormalization(32)
-            self.conv6 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=64, ksize=3,pad=1)
+            self.conv6 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=64, ksize=3,pad=0)
             self.bnc5 = L.BatchNormalization(64)
 
             #decorder pass
             self.dconv1 = L.DeconvolutionND(ndim=3,in_channels=64,out_channels=64, ksize=2, stride=2)
-            self.conv7 = L.ConvolutionND(ndim=3,in_channels=32 + 64,out_channels=32, ksize=3,pad=1)
+            self.conv7 = L.ConvolutionND(ndim=3,in_channels=32 + 64,out_channels=32, ksize=3,pad=0)
             self.bnd4 = L.BatchNormalization(32)
-            self.conv8 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=3,pad=1)
+            self.conv8 = L.ConvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=3,pad=0)
             self.bnd3 = L.BatchNormalization(32)
 
             self.dconv2 = L.DeconvolutionND(ndim=3,in_channels=32,out_channels=32, ksize=2, stride=2)
-            self.conv9 = L.ConvolutionND(ndim=3,in_channels=16 + 32,out_channels=16, ksize=3,pad=1)
+            self.conv9 = L.ConvolutionND(ndim=3,in_channels=16 + 32,out_channels=16, ksize=3,pad=0)
             self.bnd2 = L.BatchNormalization(16)
-            self.conv10 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=16, ksize=3,pad=1)
+            self.conv10 = L.ConvolutionND(ndim=3,in_channels=16,out_channels=16, ksize=3,pad=0)
             self.bnd1 = L.BatchNormalization(16)
             self.lcl = L.ConvolutionND(ndim=3, in_channels=16, out_channels=label, ksize=1, pad=0)
 
@@ -49,6 +49,7 @@ class UNet3D(chainer.Chain):
 
         h7 = F.relu(self.bnc4(self.conv5(h6)))
         h8 = F.relu(self.bnc5(self.conv6(h7)))
+
         h9 = self.dconv1(h8)
 
         h10 = F.concat([h9, self.cropping(h5,h9)])
@@ -60,6 +61,8 @@ class UNet3D(chainer.Chain):
         h15 = F.relu(self.bnd2(self.conv9(h14)))
         h16 = F.relu(self.bnd1(self.conv10(h15)))
         lcl = F.softmax(self.lcl(h16), axis=1)
+        #print(x.shape)
+        #print(h16.shape)
 
         return lcl
 

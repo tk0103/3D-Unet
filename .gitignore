@@ -2,3 +2,12 @@
 # https://qiita.com/inabe49/items/16ee3d9d1ce68daa9fff
 data/
 results/
+*.csv
+results
+configs
+Results_trM1_ValiM2
+Results_trM1_ValiM3
+Results_trM2_ValiM1
+Results_trM2_ValiM3
+Results_trM3_ValiM1
+Results_trM3_ValiM2
