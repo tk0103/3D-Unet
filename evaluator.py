@@ -8,6 +8,7 @@ from chainer.training import extensions
 from chainer.dataset import convert
 from chainer.dataset import iterator as iterator_module
 import numpy as np
+import chainer
 from chainer import reporter as reporter_module
 from chainer.training import extension
 import chainer.functions as F
@@ -33,18 +34,21 @@ class UNet3DEvaluator(extensions.Evaluator):
         dice_numerator = 0.0
         dice_denominator = 0.0
         eps = 1e-16
-
+        #print(predict.shape)
+        #print(ground_truth.shape)
         predict = F.flatten(predict)
-        ground_truth = F.flatten(ground_truth[:,:,20:24,20:24,20:24].astype(np.float32))
+
+        ground_truth = F.flatten(ground_truth.astype(np.float32))
         #predict = F.flatten(predict[:,1:4,:,:,:])
         #ground_truth = F.flatten(ground_truth[:,1:4,20:56,20:56,20:56].astype(np.float32))
-        #ground_truth = F.flatten(ground_truth[:,1:4,20:23+1,20:23+1,20:23+1].astype(np.float32))
+        #ground_truth = F.flatten(ground_truth[:,1:4,20:23+1,20:23+1,20:23+1].astype(np.float32)
 
         dice_numerator = F.sum(predict * ground_truth)
         dice_denominator = F.sum(predict+ ground_truth)
         dice = 2*dice_numerator/(dice_denominator+eps)
+        loss = 1 - dice
 
-        return 1 - dice
+        return loss
 
     def evaluate(self):
         iterator = self._iterators['main']
@@ -66,9 +70,13 @@ class UNet3DEvaluator(extensions.Evaluator):
             observation = {}
             with reporter_module.report_scope(observation):
                 ground_truth,data = self.converter(batch, self.device)
-                predict = unet(data)
+                with chainer.using_config("train", False):
+                    with chainer.no_backprop_mode():
+                        predict = unet(data)
+                        ground_truth = ground_truth[:,:,20:72,20:72,20:72]
                 #observation['vali/unet/loss'] = self.loss_softmax_cross_entropy(predict,ground_truth)
                 observation['vali/unet/dice'] = self.dice_coefficent(predict,ground_truth)
             summary.add(observation)
+            #print(observation)
 
         return summary.compute_mean()

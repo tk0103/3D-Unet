@@ -42,24 +42,29 @@ class UNet3D(chainer.Chain):
         h1 = F.relu(self.bnc0(self.conv1(x)))
         h2 = F.relu(self.bnc1(self.conv2(h1)))
         h3 = F.max_pooling_nd(h2, ksize=2, stride=2)
+        del h1
 
         h4 = F.relu(self.bnc2(self.conv3(h3)))
         h5 = F.relu(self.bnc3(self.conv4(h4)))
         h6 = F.max_pooling_nd(h5,ksize=2,stride=2)
+        del h3,h4
 
         h7 = F.relu(self.bnc4(self.conv5(h6)))
         h8 = F.relu(self.bnc5(self.conv6(h7)))
         h9 = self.dconv1(h8)
+        del h6,h7,h8
 
         h10 = F.concat([h9, self.cropping(h5,h9)])
         h11 = F.relu(self.bnd4(self.conv7(h10)))
         h12 = F.relu(self.bnd3(self.conv8(h11)))
         h13 = self.dconv2(h12)
+        del h9,h10,h11,h12
 
         h14 = F.concat([h13, self.cropping(h2,h13)])
         h15 = F.relu(self.bnd2(self.conv9(h14)))
         h16 = F.relu(self.bnd1(self.conv10(h15)))
         lcl = F.softmax(self.lcl(h16), axis=1)
+        del h2,h14,h15,g16
 
         return lcl
 

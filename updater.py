@@ -31,7 +31,8 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         dice_numerator = 0.0
         dice_denominator = 0.0
         eps = 1e-16
-
+        #print(predict.shape)
+        #print(ground_truth.shape)
         predict = F.flatten(predict)
         ground_truth = F.flatten(ground_truth.astype(np.float32))
         #predict = F.flatten(predict[:,1:4,:,:,:])
@@ -43,7 +44,7 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         loss = 1 - dice
 
         chainer.report({"dice":loss}, unet)
-
+        #print(loss)
         return loss
 
     def update_core(self):
@@ -56,7 +57,7 @@ class Unet3DUpdater(chainer.training.StandardUpdater):
         unet = self.unet
 
         predict = unet(data)
+        #label = label[:,:,20:24,20:24,20:24]
+        label = label[:,:,20:72,20:72,20:72]
 
-        label = label[:,:,20:24,20:24,20:24]
-        #print(label.shape)
         unet_optimizer.update(self.dice_coefficent, unet, predict, label)

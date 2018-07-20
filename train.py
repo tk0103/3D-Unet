@@ -64,7 +64,7 @@ def main():
 
     # Set up a neural network to train
     print ('Set up a neural network to train')
-    unet = UNet3D(3)
+    unet = UNet3D(2)
     if args.model:
         chainer.serializers.load_npz(args.model, gen)
 

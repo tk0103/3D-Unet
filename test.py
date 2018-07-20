@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--out', '-o', default= 'Results_trM1_ValiM2',
                         help='Directory to output the result')
 
-    parser.add_argument('--model', '-m', default='UNet3D_3000.npz',
+    parser.add_argument('--model', '-m', default='UNet3D_644.npz',
                         help='Load model data')
     parser.add_argument('--resume', '-res', default='',
                         help='Resume the training from snapshot')
@@ -33,7 +33,7 @@ def main():
                         help='Path to training image list file')
 
     parser.add_argument('--test_coordinate_list', type=str,
-                        default='configs/test_coordinate_nopad.csv')
+                        default='configs/test_coordinate_nopad52_1.csv')
 
     args = parser.parse_args()
 
@@ -43,7 +43,7 @@ def main():
     print('')
 
     test = UnetDataset(args.root, args.test_list,args.test_coordinate_list, config.patch['patchside'])
-    unet = UNet3D(3)
+    unet = UNet3D(2)
 
     if(args.gpu>= 0):
         use_cudnn = True
@@ -54,7 +54,7 @@ def main():
     chainer.serializers.load_npz(os.path.join(args.root,args.out,args.model),unet)
 
     coordi = pd.read_csv(os.path.join(args.root, args.test_coordinate_list),names=("x","y","z")).values.tolist()
-    out_side = 4
+    out_side = 52
     ResultOut = np.zeros((860,544,544),dtype = np.uint8)
 
     for index in range(len(test)):
@@ -74,7 +74,7 @@ def main():
 
         ResultOut[z_s:z_e,y_s:y_e,x_s:x_e] = pred_label
 
-    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResult.raw"),np.uint8)
+    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResultM3_644.raw"),np.uint8)
     print("Test done")
 
 
