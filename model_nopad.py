@@ -9,7 +9,7 @@ class UNet3D(chainer.Chain):
         super(UNet3D, self).__init__()
         with self.init_scope():
             #encorder pass
-            self.conv1 = L.ConvolutionND(ndim=3,in_channels=1,out_channels=8, ksize=3,pad=0)
+            self.conv1 = L.ConvolutionND(ndim=3,in_channels=4,out_channels=8, ksize=3,pad=0)
             self.bnc0 = L.BatchNormalization(8)
             self.conv2 = L.ConvolutionND(ndim=3,in_channels=8,out_channels=16, ksize=3,pad=0)
             self.bnc1 = L.BatchNormalization(16)
@@ -39,6 +39,7 @@ class UNet3D(chainer.Chain):
             self.lcl = L.ConvolutionND(ndim=3, in_channels=16, out_channels=label, ksize=1, pad=0)
 
     def __call__(self, x):
+
         h1 = F.relu(self.bnc0(self.conv1(x)))
         h2 = F.relu(self.bnc1(self.conv2(h1)))
         h3 = F.max_pooling_nd(h2, ksize=2, stride=2)
