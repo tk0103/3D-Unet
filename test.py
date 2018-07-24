@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--out', '-o', default= 'Results_trM1_ValiM2',
                         help='Directory to output the result')
 
-    parser.add_argument('--model', '-m', default='UNet3D_644.npz',
+    parser.add_argument('--model', '-m', default='UNet3D_200.npz',
                         help='Load model data')
     parser.add_argument('--resume', '-res', default='',
                         help='Resume the training from snapshot')
@@ -59,8 +59,9 @@ def main():
 
     for index in range(len(test)):
         t,x = test[index]
-        x = x[:,np.newaxis,:]
+        x = x[np.newaxis,:]
         x = cp.array(x)
+        print(x.shape)
         print(index)
         with chainer.using_config('train', False), chainer.using_config('enable_backprop', False):
             y = unet(x)
@@ -74,7 +75,7 @@ def main():
 
         ResultOut[z_s:z_e,y_s:y_e,x_s:x_e] = pred_label
 
-    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResultM3_644.raw"),np.uint8)
+    io.save_raw(ResultOut, os.path.join(args.root,args.out,"TestResultM3.raw"),np.uint8)
     print("Test done")
 
 
